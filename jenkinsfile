@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    stages {
+        stage('checkout'){
+            steps {
+                git 'https://github.com/revathilakshmanan/message-service.git'
+            }
+        }
+
+        }
+        stage('Build') {
+            steps {
+                sh 'docker build -t message-service:latest .'
+            }
+        }
+        stage('Test') { 
+            steps { 
+                sh 'python -m unittest discover -s tests' 
+                } 
+        }
+        stage('Push to Registry') {
+            steps {
+                sh 'docker tag message-api:latest revathilakshmanan/message-api:latest'
+                sh 'docker push revathilakshmanan/message-api:latest'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh '''
+                  kubectl apply -f kubernets/deployment.yaml
+                  kubectl apply -f kubernets/statefulset.yaml
+                  kubectl apply -f kubernets/service.
+                  kubectl apply -f kubernets/ingress.yaml
+                  kubectl apply -f kubernets/prometheus.yaml
+
+                '''
+            }
+        }
+    }
